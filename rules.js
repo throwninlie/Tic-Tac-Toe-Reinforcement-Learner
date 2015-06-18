@@ -63,7 +63,7 @@ var Rules = function(board){
 					}
 
 					if(moves[move].row == y && !pushedY){
-						moveChains[nameY].push();
+						moveChains[nameY].push(moves[move]);
 						pushedY = true;
 						//console.log("pushed row coord: " + String(y));
 					}
