@@ -1,0 +1,179 @@
+<html>
+<head>
+
+<title>Tic-Tac-Toe!</title>
+<meta content= "text/html; charset=utf-8" http-equiv="Content-Type"/>
+<link rel="stylesheet" type="text/css" href="css/general.css"/>
+<script type ="text/javascript" src="draw.js"></script>
+<script type ="text/javascript" src="board.js"></script>
+
+<script type ="text/javascript" src="rules.js"></script>
+
+<script type ="text/javascript" src="playerMove.js"></script>
+
+<script type ="text/javascript" src="lib/jquery-min.js"></script>
+<script type ="text/javascript" src="lib/bootstrap.min.js"></script>
+<script type ="text/javascript">
+    
+    $.extend({
+        getUrlVars : function(){
+            var vars = [],hash;
+            var hashes = window.location.href.slice(
+                window.location.href.indexOf('?')+1).split('&');
+            for(var i = 0; i < hashes.length; i++){
+
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            return vars;
+
+
+        },
+        getUrlVar : function(name){
+
+            return $.getUrlVars()[name];
+        }
+
+
+
+    });
+
+
+    var DEFAULT_SIZE = 3;
+
+    var board;
+    var rules;
+    var whoseTurn = "x";
+
+
+
+    $(window).load(function(){
+        var canvas,ctx;
+        canvas = document.getElementById("tic_tac_canvas");
+        ctx = canvas.getContext("2d");
+        ctx.strokeStyle = "black";
+        var size;
+        var canvas_width = canvas.width;
+        var canvas_height = canvas.height;
+        
+        if($.getUrlVar('size') && $.getUrlVar('size') >= 6){
+            board = new Board($.getUrlVar('size'));
+            size = $.getUrlVar('size');
+
+        }else{
+
+            board = new Board(DEFAULT_SIZE);
+            size = DEFAULT_SIZE;
+        }
+        //size = DEFAULT_SIZE;
+        rules = new Rules(board);
+
+        var pixPerSquare = canvas_width / size;
+        drawBoard(ctx,size,pixPerSquare);
+        var halfSquare = pixPerSquare/2;
+
+        function getMousePos(canvas,evt){
+            var rect = canvas.getBoundingClientRect();
+            return{
+                x: evt.clientX - rect.left,
+                y: evt.clientY - rect.top
+            };
+        }
+
+        $(document).on("mousedown",function(e){
+            var mousePos = getMousePos(canvas,e);
+            var x = mousePos.x;
+            var y = mousePos.y;
+            var row = Math.floor(y / pixPerSquare);
+            var col = Math.floor(x/ pixPerSquare);
+            console.log("row: " + String(row));
+            console.log("col: " + String(col));
+
+            var newMove = new PlayerMove(whoseTurn);
+            var validMove = rules.makeMove(newMove,row,col);
+            console.log("valid move: "+ validMove);
+
+
+            if(validMove){
+                var color;
+                var winCondition = rules.winCondition(whoseTurn,size);
+                console.log("win: " + String(winCondition));
+                if(whoseTurn == "x"){
+                
+                    drawX(ctx,row,col,pixPerSquare);
+                    whoseTurn = "o";
+                }
+                else if(whoseTurn == "o"){
+                    drawO(ctx,row,col,pixPerSquare);
+                    whoseTurn = "x";
+                }
+                if(whoseTurn == "x"){
+                    color = "red";
+                }else{
+                    color = "black";
+                }
+                
+                if(winCondition[0]){
+                    if(winCondition[1] == "diagonalLeft"){
+                        drawLine(ctx,0,0,canvas.width,canvas.height,color);
+                    }else if(winCondition[1] == "diagonalRight"){
+                        drawLine(ctx,canvas.width,0,0,canvas.height,color);
+                    }else if(winCondition[1][0] == "x"){
+                        var colStr = winCondition[1].substring(1);
+                        var col = parseInt(colStr);
+                        drawLineColumn(ctx,canvas,col,color,pixPerSquare);
+
+                    }else if(winCondition[1][0] == "y"){
+                        var rowStr = winCondition[1].substring(1);
+                        var row = parseInt(rowStr);
+                        drawLineRow(ctx,canvas,row,color,pixPerSquare);
+
+                    }
+                    
+                }
+
+
+
+            }
+
+        });
+
+        
+        
+
+        
+
+
+
+
+    });
+
+
+
+</script>
+
+</head>
+
+<body>
+
+    <div id="container-exp">
+       
+        <div id= "main">
+            <h1 id="prompt" style = "text-align:center;">Tic-Tac-Toe!</h1>
+            <canvas id="tic_tac_canvas" width="450" height="450" ></canvas>
+            <div id = "reward_total" style="color:black; text-align:center;font-size:30px; font-weight:10;margin:20px">
+                Total Reward: <span id="total">0</span>
+            </div>
+        </div>
+
+        <div id="press_space"></div>
+            
+
+
+            
+    
+    </div>
+
+</body>
+</html>
